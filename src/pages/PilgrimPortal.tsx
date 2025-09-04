@@ -7,8 +7,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/utils/translations';
-import { generatePass, getUserPasses, getUserPenalties, mockZones, type Pass, type Penalty } from '@/services/mockData';
-import { QrCode, Download, Clock, MapPin, AlertTriangle, CheckCircle, Plus } from 'lucide-react';
+import { generatePass, getUserPasses, getUserPenalties, mockZones, type Pass, type Penalty, type GroupMember } from '@/services/mockData';
+import { QrCode, CreditCard, Download, Clock, MapPin, AlertTriangle, CheckCircle, Plus, Users } from 'lucide-react';
+import GroupBookingForm from '@/components/GroupBookingForm';
 import { toast } from '@/hooks/use-toast';
 
 const PilgrimPortal: React.FC = () => {
@@ -49,7 +50,7 @@ const PilgrimPortal: React.FC = () => {
     }
   };
 
-  const handleBookPass = async () => {
+  const handleBookPass = async (groupMembers: GroupMember[], tentCityDays?: number) => {
     if (!user || !selectedZone) return;
     
     setBookingLoading(true);
@@ -57,15 +58,15 @@ const PilgrimPortal: React.FC = () => {
     
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       if (zone) {
-        const newPass = generatePass(user.id, zone.zoneId, zone.zoneName);
+        const newPass = generatePass(user.id, zone.zoneId, zone.zoneName, groupMembers, tentCityDays);
         setPasses(prev => [...prev, newPass]);
         
         toast({
           title: t('success'),
-          description: t('passBooked'),
+          description: `${t('passBooked')} - Group of ${groupMembers.length} members`,
           variant: 'default',
         });
         
@@ -172,10 +173,25 @@ const PilgrimPortal: React.FC = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4 mr-2" />
-                          {language === 'en' ? 'Entry Time:' : 'प्रवेश समय:'} {pass.entryTime.toLocaleString()}
+                        <div className="space-y-3">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Clock className="w-4 h-4 mr-2" />
+                            {language === 'en' ? 'Entry:' : 'प्रवेश:'} {pass.entryTime.toLocaleString()}
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Clock className="w-4 h-4 mr-2" />
+                            {language === 'en' ? 'Exit Deadline:' : 'निकासी समय सीमा:'} {pass.exitDeadline.toLocaleString()}
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Users className="w-4 h-4 mr-2" />
+                            {language === 'en' ? 'Group Size:' : 'समूह का आकार:'} {pass.groupSize} {language === 'en' ? 'members' : 'सदस्य'}
+                          </div>
+                          {pass.extraCharges && pass.extraCharges > 0 && (
+                            <div className="flex items-center text-sm text-warning">
+                              <CreditCard className="w-4 h-4 mr-2" />
+                              {language === 'en' ? 'Tent City:' : 'टेंट सिटी:'} ₹{pass.extraCharges} {language === 'en' ? 'charged' : 'शुल्क'}
+                            </div>
+                          )}
                         </div>
                         
                         <Dialog>
@@ -187,9 +203,9 @@ const PilgrimPortal: React.FC = () => {
                           </DialogTrigger>
                           <DialogContent className="max-w-md">
                             <DialogHeader>
-                              <DialogTitle>{pass.zoneName} - Digital Pass</DialogTitle>
+                              <DialogTitle>{pass.zoneName} - Digital Group Pass</DialogTitle>
                               <DialogDescription>
-                                Scan this QR code at the entry point
+                                Group of {pass.groupSize} members • Scan at entry point
                               </DialogDescription>
                             </DialogHeader>
                             <div className="text-center space-y-4">
@@ -198,8 +214,14 @@ const PilgrimPortal: React.FC = () => {
                                 alt="QR Code"
                                 className="mx-auto border rounded-lg"
                               />
-                              <div className="text-sm text-muted-foreground">
-                                Pass ID: {pass.id}
+                              <div className="space-y-2 text-sm">
+                                <div className="font-medium">Pass ID: {pass.id}</div>
+                                <div className="text-muted-foreground">
+                                  Valid until: {pass.exitDeadline.toLocaleString()}
+                                </div>
+                                <div className="text-muted-foreground">
+                                  Members: {pass.groupMembers.map(m => m.name).join(', ')}
+                                </div>
                               </div>
                               <Button variant="outline" className="w-full">
                                 <Download className="w-4 h-4 mr-2" />
@@ -218,71 +240,14 @@ const PilgrimPortal: React.FC = () => {
 
           {/* Book Pass Tab */}
           <TabsContent value="book" className="space-y-6">
-            <Card className="shadow-medium">
-              <CardHeader>
-                <CardTitle className="text-2xl">{t('bookPass')}</CardTitle>
-                <CardDescription>
-                  {language === 'en' 
-                    ? 'Select a zone and book your digital entry pass'
-                    : 'एक क्षेत्र चुनें और अपना डिजिटल प्रवेश पास बुक करें'
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    {language === 'en' ? 'Select Sacred Zone' : 'पवित्र क्षेत्र चुनें'}
-                  </label>
-                  <Select value={selectedZone} onValueChange={setSelectedZone}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={language === 'en' ? 'Choose a zone...' : 'एक क्षेत्र चुनें...'} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {mockZones.map((zone) => (
-                        <SelectItem key={zone.zoneId} value={zone.zoneId}>
-                          <div className="flex items-center justify-between w-full">
-                            <span>{zone.zoneName}</span>
-                            <Badge 
-                              variant={zone.status === 'critical' ? 'destructive' : zone.status === 'warning' ? 'secondary' : 'outline'}
-                              className="ml-2"
-                            >
-                              {Math.round(zone.density)}%
-                            </Badge>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {selectedZone && (
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    {(() => {
-                      const zone = mockZones.find(z => z.zoneId === selectedZone);
-                      return zone ? (
-                        <div className="space-y-2">
-                          <h4 className="font-semibold">{zone.zoneName}</h4>
-                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                            <span>Capacity: {zone.currentCount.toLocaleString()}/{zone.maxCapacity.toLocaleString()}</span>
-                            <span>Density: {Math.round(zone.density)}%</span>
-                            {getStatusBadge(zone.status)}
-                          </div>
-                        </div>
-                      ) : null;
-                    })()}
-                  </div>
-                )}
-
-                <Button 
-                  variant="hero" 
-                  onClick={handleBookPass}
-                  disabled={!selectedZone || bookingLoading}
-                  className="w-full"
-                >
-                  {bookingLoading ? t('loading') : t('bookPass')}
-                </Button>
-              </CardContent>
-            </Card>
+            <GroupBookingForm
+              onBookPass={handleBookPass}
+              selectedZone={selectedZone}
+              onZoneChange={setSelectedZone}
+              zones={mockZones}
+              isLoading={bookingLoading}
+              language={language}
+            />
           </TabsContent>
 
           {/* Penalties Tab */}
@@ -313,15 +278,29 @@ const PilgrimPortal: React.FC = () => {
                           <div>
                             <h4 className="font-semibold">{penalty.reason}</h4>
                             <p className="text-sm text-muted-foreground">
-                              Issued: {penalty.dateIssued.toLocaleDateString()}
+                              Issued: {penalty.dateIssued.toLocaleDateString()} • Pass: {penalty.passId}
                             </p>
+                            {penalty.overstayHours > 0 && (
+                              <p className="text-xs text-muted-foreground">
+                                Overstay: {penalty.overstayHours} hours
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold">₹{penalty.amount}</div>
-                          <Badge variant={penalty.status === 'paid' ? 'secondary' : 'destructive'}>
-                            {penalty.status === 'paid' ? 'Paid' : 'Pending'}
+                          <Badge variant={
+                            penalty.status === 'paid' ? 'secondary' : 
+                            penalty.status === 'auto_deducted' ? 'outline' : 
+                            'destructive'
+                          }>
+                            {penalty.status === 'paid' ? 'Paid' : 
+                             penalty.status === 'auto_deducted' ? 'Auto Deducted' : 
+                             'Pending'}
                           </Badge>
+                          {penalty.smsAlertSent && (
+                            <p className="text-xs text-muted-foreground mt-1">SMS Sent</p>
+                          )}
                         </div>
                       </div>
                       {penalty.status === 'pending' && (

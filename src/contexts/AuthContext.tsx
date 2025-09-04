@@ -3,14 +3,15 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 interface User {
   id: string;
   name: string;
-  mobile: string;
   aadhaar: string;
+  mobile?: string;
   role: 'pilgrim' | 'authority';
+  bankAccount?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (mobile: string, role: 'pilgrim' | 'authority') => void;
+  login: (aadhaar: string, name: string, role: 'pilgrim' | 'authority') => void;
   logout: () => void;
   isAuthenticated: boolean;
   language: 'en' | 'hi';
@@ -35,14 +36,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
 
-  const login = (mobile: string, role: 'pilgrim' | 'authority') => {
-    // Mock authentication
+  const login = (aadhaar: string, name: string, role: 'pilgrim' | 'authority') => {
+    // Mock authentication with Aadhaar validation
     const mockUser: User = {
       id: `user_${Date.now()}`,
-      name: role === 'pilgrim' ? 'राम शर्मा' : 'Admin Officer',
-      mobile: mobile,
-      aadhaar: '1234-5678-9012',
-      role: role
+      name: name,
+      aadhaar: aadhaar,
+      mobile: `9${Math.floor(Math.random() * 900000000) + 100000000}`, // Mock mobile
+      role: role,
+      bankAccount: `${aadhaar.replace(/\D/g, '').slice(-4)}XXXX` // Mock bank account
     };
     setUser(mockUser);
   };

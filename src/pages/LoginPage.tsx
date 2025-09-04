@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/utils/translations';
-import { Phone, Shield, Users } from 'lucide-react';
+import { CreditCard, Shield, Users } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
-  const [mobile, setMobile] = useState('');
+  const [aadhaar, setAadhaar] = useState('');
+  const [name, setName] = useState('');
   const [role, setRole] = useState<'pilgrim' | 'authority'>('pilgrim');
   const [isLoading, setIsLoading] = useState(false);
   const { login, language } = useAuth();
@@ -19,15 +20,16 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mobile || mobile.length !== 10) {
+    const cleanAadhaar = aadhaar.replace(/\s/g, '');
+    if (!cleanAadhaar || cleanAadhaar.length !== 12 || !name.trim()) {
       return;
     }
 
     setIsLoading(true);
     
-    // Simulate API call
+    // Simulate API call with Aadhaar validation
     setTimeout(() => {
-      login(mobile, role);
+      login(cleanAadhaar, name.trim(), role);
       setIsLoading(false);
       
       // Redirect based on role
@@ -36,7 +38,7 @@ const LoginPage: React.FC = () => {
       } else {
         navigate('/authority');
       }
-    }, 1000);
+    }, 1500);
   };
 
   return (
@@ -51,29 +53,51 @@ const LoginPage: React.FC = () => {
               {t('welcomeBack')}
             </CardTitle>
             <CardDescription className="text-base">
-              {t('enterMobile')}
+              {language === 'en' ? 'Enter your Aadhaar card details to proceed' : 'आगे बढ़ने के लिए अपना आधार कार्ड विवरण दर्ज करें'}
             </CardDescription>
           </CardHeader>
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Mobile Number Input */}
+              {/* Name Input */}
               <div className="space-y-2">
-                <Label htmlFor="mobile" className="text-sm font-medium">
-                  {t('mobileNumber')}
+                <Label htmlFor="name" className="text-sm font-medium">
+                  {language === 'en' ? 'Full Name' : 'पूरा नाम'}
+                </Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder={language === 'en' ? 'Enter your full name' : 'अपना पूरा नाम दर्ज करें'}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Aadhaar Number Input */}
+              <div className="space-y-2">
+                <Label htmlFor="aadhaar" className="text-sm font-medium">
+                  {language === 'en' ? 'Aadhaar Number' : 'आधार संख्या'}
                 </Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                  <CreditCard className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="mobile"
-                    type="tel"
-                    placeholder="9876543210"
-                    value={mobile}
-                    onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    id="aadhaar"
+                    type="text"
+                    placeholder="1234 5678 9012"
+                    value={aadhaar}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 12);
+                      const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                      setAadhaar(formatted);
+                    }}
                     className="pl-10"
                     required
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'en' ? '12-digit Aadhaar number' : '12 अंकों की आधार संख्या'}
+                </p>
               </div>
 
               {/* Role Selection */}
@@ -117,7 +141,7 @@ const LoginPage: React.FC = () => {
                 type="submit"
                 variant={role === 'pilgrim' ? 'hero' : 'authority'}
                 className="w-full"
-                disabled={!mobile || mobile.length !== 10 || isLoading}
+                disabled={!aadhaar || aadhaar.replace(/\s/g, '').length !== 12 || !name.trim() || isLoading}
               >
                 {isLoading ? t('loading') : t('signIn')}
               </Button>
@@ -127,8 +151,8 @@ const LoginPage: React.FC = () => {
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <p className="text-xs text-muted-foreground text-center">
                 {language === 'en' 
-                  ? 'Demo: Enter any 10-digit number to proceed'
-                  : 'डेमो: आगे बढ़ने के लिए कोई भी 10 अंकों का नंबर दर्ज करें'
+                  ? 'Demo: Enter any 12-digit Aadhaar number and name to proceed'
+                  : 'डेमो: आगे बढ़ने के लिए कोई भी 12 अंकों का आधार नंबर और नाम दर्ज करें'
                 }
               </p>
             </div>

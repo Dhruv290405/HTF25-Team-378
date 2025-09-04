@@ -10,15 +10,27 @@ export interface CrowdData {
   lastUpdated: Date;
 }
 
+export interface GroupMember {
+  aadhaar: string;
+  name: string;
+  age?: number;
+  relation?: string;
+}
+
 export interface Pass {
   id: string;
   userId: string;
   zoneId: string;
   zoneName: string;
   entryTime: Date;
+  exitDeadline: Date;
   exitTime?: Date;
-  status: 'active' | 'used' | 'expired';
+  status: 'active' | 'used' | 'expired' | 'overstay';
   qrCode: string;
+  groupSize: number;
+  groupMembers: GroupMember[];
+  tentCityDays?: number;
+  extraCharges?: number;
 }
 
 export interface Alert {
@@ -35,10 +47,13 @@ export interface Alert {
 export interface Penalty {
   id: string;
   userId: string;
+  passId: string;
   amount: number;
   reason: string;
-  status: 'pending' | 'paid';
   dateIssued: Date;
+  status: 'pending' | 'paid' | 'auto_deducted';
+  smsAlertSent: boolean;
+  overstayHours: number;
 }
 
 // Mock zones for Mahakumbh
@@ -143,15 +158,30 @@ export const generateQRCode = (passId: string): string => {
 // Mock pass generation
 export let mockPasses: Pass[] = [];
 
-export const generatePass = (userId: string, zoneId: string, zoneName: string): Pass => {
+export const generatePass = (
+  userId: string, 
+  zoneId: string, 
+  zoneName: string, 
+  groupMembers: GroupMember[],
+  tentCityDays?: number
+): Pass => {
+  const now = new Date();
+  const exitDeadline = new Date(now.getTime() + (72 * 60 * 60 * 1000)); // 3 days default
+  const passId = `PASS_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+  
   const pass: Pass = {
-    id: `pass_${Date.now()}`,
+    id: passId,
     userId,
     zoneId,
     zoneName,
-    entryTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+    entryTime: now,
+    exitDeadline,
     status: 'active',
-    qrCode: generateQRCode(`pass_${Date.now()}`),
+    qrCode: generateQRCode(passId),
+    groupSize: groupMembers.length,
+    groupMembers,
+    tentCityDays,
+    extraCharges: tentCityDays ? tentCityDays * 500 * groupMembers.length : 0
   };
   
   mockPasses.push(pass);
@@ -163,11 +193,25 @@ export const mockPenalties: Penalty[] = [
   {
     id: 'penalty_1',
     userId: 'user_123',
-    amount: 500,
-    reason: 'Overstaying in restricted zone',
+    passId: 'PASS_001',
+    amount: 2500,
+    reason: 'Overstaying beyond 72-hour deadline',
     status: 'pending',
     dateIssued: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    smsAlertSent: true,
+    overstayHours: 24
   },
+  {
+    id: 'penalty_2',
+    userId: 'user_456',
+    passId: 'PASS_002',
+    amount: 1000,
+    reason: 'Extended tent city stay (2 extra days)',
+    status: 'auto_deducted',
+    dateIssued: new Date(Date.now() - 48 * 60 * 60 * 1000),
+    smsAlertSent: true,
+    overstayHours: 0
+  }
 ];
 
 // Service functions
