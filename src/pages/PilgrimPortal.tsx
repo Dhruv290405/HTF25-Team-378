@@ -229,9 +229,8 @@ const PilgrimPortal: React.FC = () => {
                               </Button>
                             </div>
                           </DialogContent>
-                        </Dialog>
-                      </div>
-                    </CardContent>
+                         </Dialog>
+                     </CardContent>
                   </Card>
                 ))}
               </div>
