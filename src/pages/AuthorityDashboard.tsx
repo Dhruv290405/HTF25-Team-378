@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/utils/translations';
 import { getCrowdData, getAlerts, type CrowdData, type Alert } from '@/services/mockData';
+import YoloCrowdDetection from '@/components/YoloCrowdDetection';
 import { 
   Users, 
   AlertTriangle, 
@@ -19,12 +20,16 @@ import {
 } from 'lucide-react';
 
 const AuthorityDashboard: React.FC = () => {
-  const { language } = useAuth();
+  console.log('🛡️ AuthorityDashboard: Component loaded');
+  
+  const { language, user } = useAuth();
   const t = useTranslation(language);
   const [crowdData, setCrowdData] = useState<CrowdData[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  
+  console.log('🔍 AuthorityDashboard: Current user:', user);
 
   useEffect(() => {
     loadDashboardData();
@@ -191,6 +196,9 @@ const AuthorityDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* YOLO AI Crowd Detection */}
+        <YoloCrowdDetection className="mb-8" />
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Live Crowd Monitoring */}

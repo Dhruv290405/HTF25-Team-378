@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,31 +14,88 @@ const LoginPage: React.FC = () => {
   const [name, setName] = useState('');
   const [role, setRole] = useState<'pilgrim' | 'authority'>('pilgrim');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, language } = useAuth();
+  const { login, language, user } = useAuth();
   const navigate = useNavigate();
   const t = useTranslation(language);
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (user) {
+      console.log('🔄 useEffect: User already authenticated:', user.name, user.role);
+      if (user.role === 'authority' || user.role === 'admin') {
+        console.log('🛡️ useEffect: Redirecting to Authority Dashboard');
+        navigate('/authority');
+      } else {
+        console.log('🙏 useEffect: Redirecting to Pilgrim Portal');
+        navigate('/pilgrim');
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanAadhaar = aadhaar.replace(/\s/g, '');
-    if (!cleanAadhaar || cleanAadhaar.length !== 12 || !name.trim()) {
+    
+    console.log('🔍 Login attempt:', {
+      rawAadhaar: aadhaar,
+      cleanAadhaar: cleanAadhaar,
+      length: cleanAadhaar.length,
+      name: name,
+      role: role
+    });
+    
+    if (!cleanAadhaar || cleanAadhaar.length !== 12) {
+      const message = language === 'en' 
+        ? `Please enter a valid 12-digit Aadhaar number. You entered: ${cleanAadhaar} (${cleanAadhaar.length} digits)` 
+        : `कृपया एक वैध 12 अंकों का आधार नंबर दर्ज करें। आपने दर्ज किया: ${cleanAadhaar} (${cleanAadhaar.length} अंक)`;
+      alert(message);
       return;
     }
 
     setIsLoading(true);
     
-    // Simulate API call with Aadhaar validation
-    setTimeout(() => {
-      login(cleanAadhaar, name.trim(), role);
-      setIsLoading(false);
+    try {
+      // Use the database authentication
+      const success = await login(cleanAadhaar);
       
-      // Redirect based on role
-      if (role === 'pilgrim') {
-        navigate('/pilgrim');
+      if (success) {
+        console.log('✅ Login successful, checking user role...');
+        
+        // Small delay to ensure user state is updated
+        setTimeout(() => {
+          const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+          console.log('🔍 Current user from localStorage:', currentUser);
+          console.log('🔍 User role:', currentUser.role);
+          
+          if (currentUser.role === 'authority' || currentUser.role === 'admin') {
+            console.log('🛡️ Redirecting to Authority Dashboard');
+            navigate('/authority');
+          } else {
+            console.log('🙏 Redirecting to Pilgrim Portal');
+            navigate('/pilgrim');
+          }
+        }, 100);
       } else {
-        navigate('/authority');
+        const availableAccounts = [
+          '123456789012 - Ram Kumar (Pilgrim)',
+          '123456789013 - Sita Devi (Pilgrim)',
+          '123456789014 - Admin Officer (Authority)',
+          '123456789015 - Crowd Manager (Authority)',
+          '123456789016 - Priya Sharma (Pilgrim)'
+        ];
+        
+        alert(language === 'en' 
+          ? `Invalid Aadhaar: ${cleanAadhaar}\n\nAvailable demo accounts:\n\n${availableAccounts.join('\n')}` 
+          : `अमान्य आधार: ${cleanAadhaar}\n\nउपलब्ध डेमो खाते:\n\n${availableAccounts.join('\n')}`);
       }
-    }, 1500);
+    } catch (error) {
+      console.error('Login error:', error);
+      alert(language === 'en' 
+        ? 'Login failed. Please try again.' 
+        : 'लॉगिन विफल। कृपया पुन: प्रयास करें।');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -149,12 +206,53 @@ const LoginPage: React.FC = () => {
 
             {/* Demo Instructions */}
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-xs text-muted-foreground text-center mb-3">
                 {language === 'en' 
-                  ? 'Demo: Enter any 12-digit Aadhaar number and name to proceed'
-                  : 'डेमो: आगे बढ़ने के लिए कोई भी 12 अंकों का आधार नंबर और नाम दर्ज करें'
+                  ? 'Quick Demo Login - Click to auto-fill'
+                  : 'तेज़ डेमो लॉगिन - ऑटो-फ़िल के लिए क्लिक करें'
                 }
               </p>
+              <div className="grid grid-cols-1 gap-2">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setAadhaar('1234 5678 9012');
+                    setName('Ram Kumar');
+                    setRole('pilgrim');
+                  }}
+                  className="text-xs justify-start"
+                >
+                  🙏 Ram Kumar (Pilgrim) - 123456789012
+                </Button>
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setAadhaar('1234 5678 9014');
+                    setName('Admin Officer');
+                    setRole('authority');
+                  }}
+                  className="text-xs justify-start"
+                >
+                  🛡️ Admin Officer (Authority) - 123456789014
+                </Button>
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setAadhaar('1234 5678 9015');
+                    setName('Crowd Manager');
+                    setRole('authority');
+                  }}
+                  className="text-xs justify-start"
+                >
+                  📈 Crowd Manager (Authority) - 123456789015
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

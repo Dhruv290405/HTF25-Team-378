@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/utils/translations';
-import { generatePass, getUserPasses, getUserPenalties, mockZones, type Pass, type Penalty, type GroupMember } from '@/services/mockData';
+import { generatePass, getUserPasses, getUserPenalties, type Pass, type Penalty, type GroupMember } from '@/services/mockData';
 import { QrCode, CreditCard, Download, Clock, MapPin, AlertTriangle, CheckCircle, Plus, Users } from 'lucide-react';
 import GroupBookingForm from '@/components/GroupBookingForm';
 import { toast } from '@/hooks/use-toast';
@@ -21,6 +21,7 @@ const PilgrimPortal: React.FC = () => {
   const [selectedZone, setSelectedZone] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('passes');
+  const [zones, setZones] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -37,9 +38,21 @@ const PilgrimPortal: React.FC = () => {
         getUserPasses(user.id),
         getUserPenalties(user.id)
       ]);
+      
+      // Mock zones data
+      const mockZones = [
+        { id: 'zone_1', name: 'Sangam Ghat', maxCapacity: 15000 },
+        { id: 'zone_2', name: 'Akshaya Vat', maxCapacity: 10000 },
+        { id: 'zone_3', name: 'Hanuman Temple', maxCapacity: 8000 },
+        { id: 'zone_4', name: 'Patalpuri Temple', maxCapacity: 5000 },
+        { id: 'zone_5', name: 'Saraswati Koop', maxCapacity: 10000 }
+      ];
+      
       setPasses(userPasses);
       setPenalties(userPenalties);
+      setZones(mockZones);
     } catch (error) {
+      console.error('Failed to load user data:', error);
       toast({
         title: t('error'),
         description: 'Failed to load data',
@@ -54,14 +67,17 @@ const PilgrimPortal: React.FC = () => {
     if (!user || !selectedZone) return;
     
     setBookingLoading(true);
-    const zone = mockZones.find(z => z.zoneId === selectedZone);
+    const zone = zones.find(z => z.id === selectedZone);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
       if (zone) {
-        const newPass = generatePass(user.id, zone.zoneId, zone.zoneName, groupMembers, tentCityDays);
+        const newPass = generatePass(
+          user.id, 
+          zone.id, 
+          zone.name, 
+          groupMembers, 
+          tentCityDays
+        );
         setPasses(prev => [...prev, newPass]);
         
         toast({
@@ -73,6 +89,7 @@ const PilgrimPortal: React.FC = () => {
         setSelectedZone('');
       }
     } catch (error) {
+      console.error('Failed to book pass:', error);
       toast({
         title: t('error'),
         description: 'Failed to book pass',
@@ -176,11 +193,11 @@ const PilgrimPortal: React.FC = () => {
                         <div className="space-y-3">
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="w-4 h-4 mr-2" />
-                            {language === 'en' ? 'Entry:' : 'प्रवेश:'} {pass.entryTime.toLocaleString()}
+                            {language === 'en' ? 'Entry:' : 'प्रवेश:'} {pass.entryTime ? new Date(pass.entryTime).toLocaleString() : 'Not entered'}
                           </div>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="w-4 h-4 mr-2" />
-                            {language === 'en' ? 'Exit Deadline:' : 'निकासी समय सीमा:'} {pass.exitDeadline.toLocaleString()}
+                            {language === 'en' ? 'Exit Deadline:' : 'निकासी समय सीमा:'} {new Date(pass.exitDeadline).toLocaleString()}
                           </div>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Users className="w-4 h-4 mr-2" />
@@ -243,7 +260,7 @@ const PilgrimPortal: React.FC = () => {
               onBookPass={handleBookPass}
               selectedZone={selectedZone}
               onZoneChange={setSelectedZone}
-              zones={mockZones}
+              zones={zones.map(z => ({ zoneId: z.id, zoneName: z.name, currentCount: 0, maxCapacity: z.maxCapacity, density: 0, status: 'normal' as const, lastUpdated: new Date() }))}
               isLoading={bookingLoading}
               language={language}
             />

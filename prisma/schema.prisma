@@ -1,0 +1,250 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id          String   @id @default(uuid())
+  aadhaar     String   @unique
+  name        String
+  mobile      String   @unique
+  email       String?
+  role        String   @default("pilgrim") // pilgrim, authority, admin
+  bankAccount String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relationships
+  passes      Pass[]
+  penalties   Penalty[]
+  groupLeader GroupMember[] @relation("GroupLeader")
+  groupMember GroupMember[] @relation("GroupMember")
+  notifications Notification[]
+  auditLogs   AuditLog[]
+  
+  @@map("users")
+}
+
+model Zone {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  maxCapacity Int
+  location    String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relationships
+  passes      Pass[]
+  crowdData   CrowdData[]
+  iotSensors  IoTSensor[]
+  alerts      Alert[]
+  
+  @@map("zones")
+}
+
+model Pass {
+  id           String    @id @default(uuid())
+  userId       String
+  zoneId       String
+  qrCode       String    @unique
+  groupSize    Int       @default(1)
+  entryTime    DateTime?
+  exitDeadline DateTime
+  exitTime     DateTime?
+  status       String    @default("active") // active, used, expired, overstay, cancelled
+  tentCityDays Int?
+  extraCharges Float?    @default(0)
+  totalAmount  Float?    @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relationships
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  zone         Zone        @relation(fields: [zoneId], references: [id])
+  groupMembers GroupMember[]
+  penalties    Penalty[]
+  
+  @@map("passes")
+}
+
+model GroupMember {
+  id       String  @id @default(uuid())
+  passId   String
+  userId   String? // null if not a registered user
+  aadhaar  String
+  name     String
+  age      Int?
+  relation String?
+  
+  // Relationships
+  pass     Pass  @relation(fields: [passId], references: [id], onDelete: Cascade)
+  user     User? @relation("GroupMember", fields: [userId], references: [id])
+  leader   User? @relation("GroupLeader", fields: [userId], references: [id])
+  
+  @@map("group_members")
+}
+
+model Penalty {
+  id              String   @id @default(uuid())
+  userId          String
+  passId          String
+  amount          Float
+  reason          String
+  status          String   @default("pending") // pending, paid, auto_deducted, waived
+  overstayHours   Int      @default(0)
+  smsAlertSent    Boolean  @default(false)
+  emailAlertSent  Boolean  @default(false)
+  dateIssued      DateTime @default(now())
+  datePaid        DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relationships
+  user            User     @relation(fields: [userId], references: [id])
+  pass            Pass     @relation(fields: [passId], references: [id])
+  
+  @@map("penalties")
+}
+
+model CrowdData {
+  id           String   @id @default(uuid())
+  zoneId       String
+  currentCount Int
+  density      Float
+  status       String   // normal, warning, critical
+  temperature  Float?
+  humidity     Float?
+  soundLevel   Float?
+  timestamp    DateTime @default(now())
+  
+  // Relationships
+  zone         Zone     @relation(fields: [zoneId], references: [id])
+  
+  @@map("crowd_data")
+}
+
+model IoTSensor {
+  id           String   @id @default(uuid())
+  zoneId       String
+  sensorId     String   @unique
+  type         String   // people_counter, rfid_reader, thermal_camera, sound_monitor
+  location     String
+  status       String   @default("active") // active, inactive, maintenance
+  batteryLevel Int?
+  lastReading  DateTime?
+  isOnline     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relationships
+  zone         Zone     @relation(fields: [zoneId], references: [id])
+  readings     SensorReading[]
+  
+  @@map("iot_sensors")
+}
+
+model SensorReading {
+  id        String   @id @default(uuid())
+  sensorId  String
+  value     Float
+  unit      String?
+  metadata  String?  // JSON string for additional data
+  timestamp DateTime @default(now())
+  
+  // Relationships
+  sensor    IoTSensor @relation(fields: [sensorId], references: [id])
+  
+  @@map("sensor_readings")
+}
+
+model Alert {
+  id        String   @id @default(uuid())
+  zoneId    String?
+  type      String   // capacity, emergency, fraud, system, weather
+  message   String
+  severity  String   // low, medium, high, critical
+  isResolved Boolean @default(false)
+  resolvedBy String?
+  resolvedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  zone      Zone?    @relation(fields: [zoneId], references: [id])
+  
+  @@map("alerts")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   // sms, email, push, system
+  status    String   @default("pending") // pending, sent, failed, read
+  isRead    Boolean  @default(false)
+  sentAt    DateTime?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String   // login, logout, pass_generated, penalty_issued, etc.
+  entity    String?  // pass, user, zone, etc.
+  entityId  String?
+  oldValues String?  // JSON string
+  newValues String?  // JSON string
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  
+  // Relationships
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  type      String   @default("string") // string, number, boolean, json
+  category  String   @default("general")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("system_settings")
+}
+
+model Analytics {
+  id           String   @id @default(uuid())
+  date         DateTime
+  totalVisitors Int     @default(0)
+  totalPasses  Int      @default(0)
+  totalRevenue Float    @default(0)
+  avgDensity   Float    @default(0)
+  peakHour     Int?
+  weatherData  String?  // JSON string
+  events       String?  // JSON string for special events
+  createdAt    DateTime @default(now())
+  
+  @@map("analytics")
+}
