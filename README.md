@@ -42,6 +42,34 @@
 - **Hanuman Temple**: Historic temple complex (8,000 capacity)
 - **Patalpuri Temple**: Underground temple (5,000 capacity)
 - **Saraswati Koop**: Sacred well area (10,000 capacity)
+  
+# Smart Crowd Management Solution
+
+![Landing Page](src/assets/Screenshot 2025-09-09 180928.png)
+*Main landing page: Welcomes pilgrims and explains the core solution.*
+
+---
+
+## Key Features
+
+**Pilgrim Login**
+![Login Screen](src/assets/Screenshot 2025-09-09 180848.png)
+*Secure Aadhaar-based login for attendees.*
+
+**Group Pass Management**
+![Group Booking](src/assets/Screenshot 2025-09-09 181126.png)
+*Book passes for groups and manage family members easily.*
+
+## Authority Dashboard
+
+Monitor the entire event in real-time with advanced analytics, warnings, and zone management features:
+
+![Dashboard Overview](src/assets/Screenshot 2025-09-09 181553.png)
+*Real-time crowd analysis, alerts, and system status for authorities.*
+
+![Live Crowd Monitoring and Alerts](src/assets/Screenshot 2025-09-09 181242.pn)
+*Detailed crowd density by zone, live event logs, and AI-powered alerts for safety and incident management.*
+
 
 ## 🚀 Quick Start
 
