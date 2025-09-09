@@ -67,7 +67,7 @@
 *Real-time crowd analysis, alerts, and system status for authorities.*
 
 **Live Crowd Monitoring and Alerts**
-![Live Crowd Monitoring and Alerts](https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/Screenshot%202025-09-09%20181242.png )
+![Live Crowd Monitoring and Alerts](https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/SECURITY.jpg)
 *Detailed crowd density by zone, live event logs, and AI-powered alerts for safety and incident management.*
 
 
