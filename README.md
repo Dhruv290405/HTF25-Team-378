@@ -50,23 +50,22 @@
 
 ## Key Features
 
-**Pilgrim Login**  
+**Pilgrim Login**
 ![Login Screen](src/assets/Screenshot-2025-09-09-180848.png)
 *Secure Aadhaar-based login for attendees.*
 
-**Group Pass Management**  
+**Group Pass Management**
 ![Group Booking](src/assets/Screenshot-2025-09-09-181126.png)
 *Book passes for groups and manage family members easily.*
 
 ## Authority Dashboard
 
-**Dashboard Overview**  
+**Dashboard Overview**
 ![Dashboard Overview](src/assets/Screenshot-2025-09-09-181553.png)
-*Real-time crowd analysis, alerts, and system status for authorities.*
 
-**Live Crowd Monitoring and Alerts**  
+**Live Crowd Monitoring and Alerts**
 ![Live Crowd Monitoring and Alerts](src/assets/Screenshot-2025-09-09-181242.png)
-*Detailed crowd density by zone, live event logs, and AI-powered alerts for safety and incident management.*
+
 
 ## 🚀 Quick Start
 
