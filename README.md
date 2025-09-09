@@ -51,7 +51,7 @@
 ## Key Features
 
 **Pilgrim Login**
-![Login Screen]([src/assets/Screenshot-2025-09-09-180848.png](https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/Screenshot%202025-09-09%20180848.png))
+![Login Screen](https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/Screenshot%202025-09-09%20180848.png)
 *Secure Aadhaar-based login for attendees.*
 
 **Group Pass Management**
