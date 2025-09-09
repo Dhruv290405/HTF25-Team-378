@@ -45,7 +45,7 @@
   
 # Smart Crowd Management Solution
 
-![Landing Page](src/assets/Screenshot-2025-09-09-180928.png)
+![Landing Page](https://raw.githubusercontent.com/Dhruv290405/flow_mitra_/main/src/assets/Screenshot-2025-09-09-180928.png)
 *Main landing page: Welcomes pilgrims and explains the core solution.*
 
 ## Key Features
