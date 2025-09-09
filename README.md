@@ -133,6 +133,7 @@ model = YOLO('yolov8x.pt')
 - **shadcn/ui**: Modern UI components
 - **React Router**: Client-side routing
 - **TanStack Query**: Data fetching and caching
+- **Power BI**: interactive dashboard
 
 ### **Backend & Database**
 - **Prisma**: Type-safe database ORM
