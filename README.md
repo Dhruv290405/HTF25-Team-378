@@ -45,7 +45,7 @@
   
 # Smart Crowd Management Solution
 
-<img src="(https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/Screenshot%202025-09-09%20180928.png)" alt="Login Screen" width="400"/>
+![Landing Page (UI)](https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/Screenshot%202025-09-09%20180928.png)
 
 
 *Main landing page: Welcomes pilgrims and explains the core solution.*
