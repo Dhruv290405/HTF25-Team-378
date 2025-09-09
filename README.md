@@ -45,7 +45,7 @@
   
 # Smart Crowd Management Solution
 
-![Landing Page](https://raw.githubusercontent.com/Dhruv290405/flow_mitra_/main/src/assets/Screenshot-2025-09-09-180928.png)
+![Landing Page](https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/Screenshot%202025-09-09%20180928.png )
 *Main landing page: Welcomes pilgrims and explains the core solution.*
 
 ## Key Features
@@ -55,16 +55,18 @@
 *Secure Aadhaar-based login for attendees.*
 
 **Group Pass Management**
-![Group Booking](src/assets/Screenshot-2025-09-09-181126.png)
+![Group Booking](https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/Screenshot%202025-09-09%20181126.png)
 *Book passes for groups and manage family members easily.*
 
 ## Authority Dashboard
 
 **Dashboard Overview**
-![Dashboard Overview](src/assets/Screenshot-2025-09-09-181553.png)
+![Dashboard Overview](https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/Screenshot%202025-09-09%20181553.png)
+*Real-time crowd analysis, alerts, and system status for authorities.*
 
 **Live Crowd Monitoring and Alerts**
-![Live Crowd Monitoring and Alerts](src/assets/Screenshot-2025-09-09-181242.png)
+![Live Crowd Monitoring and Alerts](https://github.com/Dhruv290405/flow_mitra_/blob/main/src/assets/Screenshot%202025-09-09%20181242.png )
+*Detailed crowd density by zone, live event logs, and AI-powered alerts for safety and incident management.*
 
 
 ## 🚀 Quick Start
