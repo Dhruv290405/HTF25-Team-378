@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,37 +6,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTranslation } from '@/utils/translations';
+import { useTranslation } from 'react-i18next';
+const VoiceToText = React.lazy(() => import('@/components/VoiceToText'));
+const AIChatbot = React.lazy(() => import('@/components/AIChatbot'));
 import { generatePass, getUserPasses, getUserPenalties, type Pass, type Penalty, type GroupMember } from '@/services/mockData';
 import { QrCode, CreditCard, Download, Clock, MapPin, AlertTriangle, CheckCircle, Plus, Users } from 'lucide-react';
 import GroupBookingForm from '@/components/GroupBookingForm';
 import { toast } from '@/hooks/use-toast';
 
 const PilgrimPortal: React.FC = () => {
-  const { user, language } = useAuth();
-  const t = useTranslation(language);
+  const { user, logout } = useAuth();
+  const { t, i18n } = useTranslation();
+  const language = (i18n?.language as 'en' | 'hi' | 'te') || 'en';
   const [passes, setPasses] = useState<Pass[]>([]);
   const [penalties, setPenalties] = useState<Penalty[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedZone, setSelectedZone] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('passes');
-  const [zones, setZones] = useState<any[]>([]);
+  const [zones, setZones] = useState<{ id: string; name: string; maxCapacity: number }[]>([]);
 
-  useEffect(() => {
-    if (user) {
-      loadUserData();
-    }
-  }, [user]);
-
-  const loadUserData = async () => {
-    if (!user) return;
-    
+  const loadUserData = useCallback(async () => {
     setLoading(true);
     try {
+      // Use user ID if available, otherwise use demo ID
+      const userId = user?.id || 'demo-user';
       const [userPasses, userPenalties] = await Promise.all([
-        getUserPasses(user.id),
-        getUserPenalties(user.id)
+        getUserPasses(userId),
+        getUserPenalties(userId)
       ]);
       
       // Mock zones data
@@ -61,10 +58,15 @@ const PilgrimPortal: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, t]);
+
+  useEffect(() => {
+    // Load data regardless of user (for demo mode)
+    loadUserData();
+  }, [loadUserData]);
 
   const handleBookPass = async (groupMembers: GroupMember[], tentCityDays?: number) => {
-    if (!user || !selectedZone) return;
+    if (!selectedZone) return;
     
     setBookingLoading(true);
     const zone = zones.find(z => z.id === selectedZone);
@@ -131,25 +133,57 @@ const PilgrimPortal: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      {/* Navigation Header */}
+      <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-6">
+              <h1 className="text-xl font-bold text-gradient">TRINETRA</h1>
+              <span className="text-sm text-muted-foreground">Pilgrim Portal</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <a href="/" className="text-sm text-muted-foreground hover:text-primary">Home</a>
+              <a href="/authority" className="text-sm text-muted-foreground hover:text-primary">Authority Dashboard</a>
+              {user && (
+                <>
+                  <span className="text-sm font-medium text-primary">🙏 {user.name} ({user.role})</span>
+                  <Button variant="outline" size="sm" onClick={logout}>Logout</Button>
+                </>
+              )}
+              {!user && (
+                <a href="/login" className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Login</a>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gradient mb-2">
-            {t('welcomePilgrim')}
+            {t('pilgrim.welcome')} {!user && <Badge variant="secondary" className="ml-2">Demo Mode</Badge>}
           </h1>
           <p className="text-muted-foreground text-lg">
-            {language === 'en' 
-              ? 'Manage your digital passes and stay updated on your pilgrimage journey'
-              : 'अपने डिजिटल पास प्रबंधित करें और अपनी तीर्थयात्रा की जानकारी रखें'
-            }
+            Manage your digital passes, get AI assistance, and stay updated on your pilgrimage journey
           </p>
+          {!user && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm">
+                🌟 <strong>Demo Mode:</strong> You're viewing the Pilgrim Portal without authentication. 
+                <a href="/login" className="underline ml-1">Login</a> for full functionality.
+              </p>
+            </div>
+          )}
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="passes">{t('myPasses')}</TabsTrigger>
-            <TabsTrigger value="book">{t('bookPass')}</TabsTrigger>
-            <TabsTrigger value="penalties">{t('penalties')}</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="passes">{t('pilgrim.passes')}</TabsTrigger>
+            <TabsTrigger value="book">Book Pass</TabsTrigger>
+            <TabsTrigger value="voice">{t('pilgrim.voiceAssistant')}</TabsTrigger>
+            <TabsTrigger value="chatbot">AI Assistant</TabsTrigger>
+            <TabsTrigger value="penalties">Penalties</TabsTrigger>
           </TabsList>
 
           {/* My Passes Tab */}
@@ -158,15 +192,8 @@ const PilgrimPortal: React.FC = () => {
               <Card className="shadow-medium">
                 <CardContent className="p-8 text-center">
                   <QrCode className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    {language === 'en' ? 'No Passes Yet' : 'अभी तक कोई पास नहीं'}
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    {language === 'en' 
-                      ? 'Book your first digital pass to begin your sacred journey'
-                      : 'अपनी पवित्र यात्रा शुरू करने के लिए अपना पहला डिजिटल पास बुक करें'
-                    }
-                  </p>
+                  <h3 className="text-lg font-semibold mb-2">{t('pilgrim.noPasses')}</h3>
+                  <p className="text-muted-foreground mb-4">{t('pilgrim.noPassesDesc')}</p>
                   <Button variant="hero" onClick={() => setActiveTab('book')}>
                     <Plus className="w-4 h-4 mr-2" />
                     {t('bookPass')}
@@ -193,20 +220,20 @@ const PilgrimPortal: React.FC = () => {
                         <div className="space-y-3">
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="w-4 h-4 mr-2" />
-                            {language === 'en' ? 'Entry:' : 'प्रवेश:'} {pass.entryTime ? new Date(pass.entryTime).toLocaleString() : 'Not entered'}
+                            {t('pilgrim.entryLabel')} {pass.entryTime ? new Date(pass.entryTime).toLocaleString() : t('common.loading')}
                           </div>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="w-4 h-4 mr-2" />
-                            {language === 'en' ? 'Exit Deadline:' : 'निकासी समय सीमा:'} {new Date(pass.exitDeadline).toLocaleString()}
+                            {t('pilgrim.exitDeadlineLabel')} {new Date(pass.exitDeadline).toLocaleString()}
                           </div>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Users className="w-4 h-4 mr-2" />
-                            {language === 'en' ? 'Group Size:' : 'समूह का आकार:'} {pass.groupSize} {language === 'en' ? 'members' : 'सदस्य'}
+                            {t('pilgrim.groupSizeLabel')} {pass.groupSize} {t('pilgrim.members')}
                           </div>
                           {pass.extraCharges && pass.extraCharges > 0 && (
                             <div className="flex items-center text-sm text-warning">
                               <CreditCard className="w-4 h-4 mr-2" />
-                              {language === 'en' ? 'Tent City:' : 'टेंट सिटी:'} ₹{pass.extraCharges} {language === 'en' ? 'charged' : 'शुल्क'}
+                              {t('pilgrim.tentCity')} ₹{pass.extraCharges} {t('pilgrim.charged')}
                             </div>
                           )}
                         </div>
@@ -332,6 +359,43 @@ const PilgrimPortal: React.FC = () => {
               </div>
             )}
           </TabsContent>
+
+          {/* Voice Assistant Tab */}
+          <TabsContent value="voice" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Suspense fallback={<div className="p-4">Loading voice assistant...</div>}>
+                <VoiceToText 
+                  onTextChange={(text) => console.log('Voice input:', text)}
+                  placeholder={t('chatbot.placeholder')}
+                />
+              </Suspense>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('pilgrim.help')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Use your voice to:
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li>• Ask about crowd status</li>
+                    <li>• Get directions</li>
+                    <li>• Check pass information</li>
+                    <li>• Find facilities</li>
+                    <li>• Emergency assistance</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* AI Chatbot Tab */}
+          <TabsContent value="chatbot" className="space-y-6">
+            <Suspense fallback={<div className="p-4">Loading AI assistant...</div>}>
+              <AIChatbot />
+            </Suspense>
+          </TabsContent>
+
         </Tabs>
       </div>
     </div>

@@ -3,22 +3,115 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mahakumbh 2028 - Smart Crowd Management Solution</title>
-    <meta name="description" content="Smart Crowd Management Solution for Mahakumbh 2028 - Advanced digital infrastructure ensuring safe and organized pilgrimage experience" />
+    <title>TRINETRA - Mahakumbh 2028 Smart Crowd Management</title>
+    <meta name="description" content="TRINETRA - Smart Crowd Management Solution for Mahakumbh 2028. Advanced digital infrastructure ensuring safe and organized pilgrimage experience through AI-powered monitoring." />
     <meta name="author" content="Mahakumbh Digital Authority" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/trinetra-logo.svg" />
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
 
-    <meta property="og:title" content="Mahakumbh 2028 - Smart Crowd Management" />
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="TRINETRA - Mahakumbh 2028 Smart Crowd Management" />
     <meta property="og:description" content="AI-powered crowd monitoring, digital passes, and real-time management for the world's largest spiritual gathering" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="/trinetra-logo.svg" />
 
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:title" content="TRINETRA - Mahakumbh 2028" />
+    <meta name="twitter:description" content="Smart Crowd Management Solution with AI-powered monitoring and digital passes" />
+    <meta name="twitter:image" content="/trinetra-logo.svg" />
   </head>
 
   <body>
+    <!-- Static debug banner: visible even if client JS fails -->
+    <div id="static-debug" style="position:fixed;right:12px;top:12px;z-index:99999;background:#111827;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-family:system-ui">HTML OK</div>
     <div id="root"></div>
+
+    <!-- Non-React fallback: show errors or a message if the app fails to start -->
+    <script>
+      (function () {
+        try {
+          window.__APP_STARTED__ = false;
+        } catch (e) {}
+
+        function createOverlay() {
+          if (document.getElementById('fallback-overlay')) return document.getElementById('fallback-overlay');
+          const o = document.createElement('div');
+          o.id = 'fallback-overlay';
+          o.style.position = 'fixed';
+          o.style.left = '12px';
+          o.style.bottom = '12px';
+          o.style.zIndex = '2147483647';
+          o.style.maxWidth = '640px';
+          o.style.maxHeight = '60vh';
+          o.style.overflow = 'auto';
+          o.style.background = 'rgba(17,24,39,0.96)';
+          o.style.color = '#fff';
+          o.style.padding = '12px';
+          o.style.borderRadius = '8px';
+          o.style.fontFamily = 'system-ui,Segoe UI,Roboto,Helvetica,Arial';
+          o.style.fontSize = '13px';
+          o.innerHTML = '<strong style="display:block;margin-bottom:8px">Application failed to start</strong><div id="fallback-overlay-body">Waiting for app...</div>';
+          document.body.appendChild(o);
+          return o;
+        }
+
+        function showMessage(msg) {
+          const o = createOverlay();
+          const b = document.getElementById('fallback-overlay-body');
+          if (b) {
+            const p = document.createElement('pre');
+            p.style.whiteSpace = 'pre-wrap';
+            p.style.margin = '6px 0';
+            p.style.background = 'rgba(255,255,255,0.04)';
+            p.style.padding = '8px';
+            p.style.borderRadius = '6px';
+            p.textContent = msg;
+            b.appendChild(p);
+          }
+        }
+
+        window.addEventListener('error', function (ev) {
+          try {
+            const msg = (ev && ev.message) ? ev.message : String(ev && ev.error ? ev.error : ev);
+            showMessage('Uncaught error: ' + msg + (ev.filename ? ('\nFile: ' + ev.filename + ':' + ev.lineno) : ''));
+          } catch (e) {}
+        });
+
+        const origConsoleError = console.error.bind(console);
+        console.error = function () {
+          try {
+            const args = Array.prototype.slice.call(arguments).map(a => {
+              try { return typeof a === 'string' ? a : JSON.stringify(a); } catch (e) { return String(a); }
+            }).join(' ');
+            showMessage('Console.error: ' + args);
+          } catch (e) {}
+          origConsoleError.apply(console, arguments);
+        };
+
+        // If app hasn't set the started flag within 2000ms, show overlay
+        setTimeout(function () {
+          try {
+            if (!window.__APP_STARTED__) {
+              showMessage('App did not signal readiness. Check console for details.');
+            } else {
+              // remove overlay if exists
+              const el = document.getElementById('fallback-overlay');
+              if (el) el.remove();
+            }
+          } catch (e) {}
+        }, 2000);
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

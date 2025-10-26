@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#1e3a8a" stroke="#d4af37" stroke-width="8"/>
+  <circle cx="256" cy="256" r="220" fill="none" stroke="#d4af37" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Trishul (Trident) -->
+  <g transform="translate(256,80)">
+    <!-- Central Prong -->
+    <path d="M-2,0 L-2,120 L2,120 L2,0 Z" fill="#d4af37"/>
+    <path d="M-8,0 L8,0 L4,-20 L-4,-20 Z" fill="#d4af37"/>
+    
+    <!-- Left Prong -->
+    <path d="M-12,20 L-12,80 L-8,80 L-8,20 Z" fill="#d4af37"/>
+    <path d="M-16,20 L-8,20 L-10,0 L-14,0 Z" fill="#d4af37"/>
+    
+    <!-- Right Prong -->
+    <path d="M8,20 L8,80 L12,80 L12,20 Z" fill="#d4af37"/>
+    <path d="M8,20 L16,20 L14,0 L10,0 Z" fill="#d4af37"/>
+    
+    <!-- Handle -->
+    <rect x="-3" y="120" width="6" height="80" fill="#d4af37"/>
+  </g>
+  
+  <!-- Third Eye -->
+  <g transform="translate(256,280)">
+    <!-- Eye Outline -->
+    <ellipse cx="0" cy="0" rx="35" ry="20" fill="#ffffff" stroke="#d4af37" stroke-width="2"/>
+    <!-- Iris -->
+    <circle cx="0" cy="0" r="12" fill="#d4af37"/>
+    <!-- Pupil -->
+    <circle cx="0" cy="0" r="6" fill="#1e3a8a"/>
+    <!-- Light Rays -->
+    <g stroke="#d4af37" stroke-width="2" opacity="0.7">
+      <line x1="-50" y1="0" x2="-40" y2="0"/>
+      <line x1="40" y1="0" x2="50" y2="0"/>
+      <line x1="0" y1="-35" x2="0" y2="-45"/>
+      <line x1="0" y1="35" x2="0" y2="45"/>
+      <line x1="-35" y1="-25" x2="-42" y2="-32"/>
+      <line x1="35" y1="-25" x2="42" y2="-32"/>
+      <line x1="-35" y1="25" x2="-42" y2="32"/>
+      <line x1="35" y1="25" x2="42" y2="32"/>
+    </g>
+  </g>
+  
+  <!-- TRINETRA Text -->
+  <text x="256" y="400" text-anchor="middle" font-family="serif" font-size="32" font-weight="bold" fill="#ffffff">TRINETRA</text>
+  
+  <!-- Subtitle -->
+  <text x="256" y="430" text-anchor="middle" font-family="serif" font-size="14" fill="#d4af37">SIMHASTHA 2028</text>
+  
+  <!-- Decorative Wave -->
+  <path d="M200,440 Q220,435 240,440 T280,440 T320,440" fill="none" stroke="#4f46e5" stroke-width="2"/>
+</svg>

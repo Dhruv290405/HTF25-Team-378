@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Static Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .test { background: yellow; padding: 20px; border: 2px solid red; }
+        h1 { color: red; font-size: 48px; }
+    </style>
+</head>
+<body>
+    <div class="test">
+        <h1>🚀 STATIC HTML TEST</h1>
+        <p style="font-size: 24px;">If you can see this, the browser is working!</p>
+        <p>No React, no build system, just pure HTML.</p>
+        <div id="react-root">React will mount here...</div>
+    </div>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <script>
+        console.log('Script running...');
+        
+        function TestComponent() {
+            return React.createElement('div', {
+                style: { background: 'lightblue', padding: '20px', margin: '10px 0' }
+            }, [
+                React.createElement('h2', { key: 'h2' }, '✅ React Component Working!'),
+                React.createElement('p', { key: 'p' }, 'React is rendering from CDN')
+            ]);
+        }
+        
+        try {
+            const root = ReactDOM.createRoot(document.getElementById('react-root'));
+            root.render(React.createElement(TestComponent));
+            console.log('React rendered successfully');
+        } catch (error) {
+            console.error('React error:', error);
+            document.getElementById('react-root').innerHTML = '<p style="color: red;">React Error: ' + error.message + '</p>';
+        }
+    </script>
+</body>
+</html>

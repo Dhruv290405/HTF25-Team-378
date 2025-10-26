@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
+import i18n from '@/i18n';
 import MockAuthService from '../services/mockAuthService';
 
 interface User {
@@ -9,8 +10,8 @@ interface User {
   email?: string;
   role: 'pilgrim' | 'authority' | 'admin';
   isVerified: boolean;
-  passes?: any[];
-  penalties?: any[];
+  passes?: unknown[];
+  penalties?: unknown[];
   unreadNotifications?: number;
   bankAccount?: string;
 }
@@ -20,8 +21,9 @@ interface AuthContextType {
   login: (aadhaar: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
-  language: 'en' | 'hi';
+  language: 'en' | 'hi' | 'te';
   toggleLanguage: () => void;
+  setLanguage: (lang: 'en' | 'hi' | 'te') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,9 +42,12 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [language, setLanguage] = useState<'en' | 'hi'>('en');
+  const [language, setLanguage] = useState<'en' | 'hi' | 'te'>(() => {
+    const stored = localStorage.getItem('lang');
+    return (stored as 'en' | 'hi' | 'te') || 'en';
+  });
 
-  const login = async (aadhaar: string): Promise<boolean> => {
+  const login = useCallback(async (aadhaar: string): Promise<boolean> => {
     try {
       console.log('🔐 AuthContext: Attempting login with Aadhaar:', aadhaar);
       const authenticatedUser = await MockAuthService.authenticateUser(aadhaar);
@@ -73,12 +78,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('❌ AuthContext: Login error:', error);
       return false;
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('user');
-  };
+  }, []);
 
   // Load user from localStorage on mount
   useEffect(() => {
@@ -93,20 +98,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const toggleLanguage = () => {
-    setLanguage(prev => prev === 'en' ? 'hi' : 'en');
-  };
+  const toggleLanguage = useCallback(() => {
+    setLanguage(prev => prev === 'en' ? 'hi' : prev === 'hi' ? 'te' : 'en');
+  }, []);
+
+  // Keep i18n in sync with our context language and persist choice
+  useEffect(() => {
+    try {
+      // Only change language if it's different to avoid loops
+      if (i18n.language !== language) {
+        i18n.changeLanguage(language);
+      }
+      localStorage.setItem('lang', language);
+    } catch (e) {
+      console.error('Failed to change i18n language:', e);
+    }
+  }, [language]);
 
   const isAuthenticated = user !== null;
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     login,
     logout,
     isAuthenticated,
     language,
     toggleLanguage,
-  };
+    setLanguage,
+  }), [user, login, logout, isAuthenticated, language, toggleLanguage]);
 
   return (
     <AuthContext.Provider value={value}>

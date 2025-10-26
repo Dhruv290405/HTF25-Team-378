@@ -21,7 +21,9 @@ interface GroupBookingFormProps {
     maxCapacity: number;
   }>;
   isLoading: boolean;
-  language: 'en' | 'hi';
+  language: 'en' | 'hi' | 'te';
+  // allow Telugu 'te' as well (project supports multiple langs)
+  // keep backward compatible
 }
 
 const GroupBookingForm: React.FC<GroupBookingFormProps> = ({

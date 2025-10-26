@@ -14,23 +14,23 @@ const LoginPage: React.FC = () => {
   const [name, setName] = useState('');
   const [role, setRole] = useState<'pilgrim' | 'authority'>('pilgrim');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, language, user } = useAuth();
+  const { login, logout, language, user } = useAuth();
   const navigate = useNavigate();
   const t = useTranslation(language);
 
-  // Redirect if user is already authenticated
-  useEffect(() => {
-    if (user) {
-      console.log('🔄 useEffect: User already authenticated:', user.name, user.role);
-      if (user.role === 'authority' || user.role === 'admin') {
-        console.log('🛡️ useEffect: Redirecting to Authority Dashboard');
-        navigate('/authority');
-      } else {
-        console.log('🙏 useEffect: Redirecting to Pilgrim Portal');
-        navigate('/pilgrim');
-      }
-    }
-  }, [user, navigate]);
+  // Don't auto-redirect - let users choose to logout or switch roles
+  // useEffect(() => {
+  //   if (user) {
+  //     console.log('🔄 useEffect: User already authenticated:', user.name, user.role);
+  //     if (user.role === 'authority' || user.role === 'admin') {
+  //       console.log('🛡️ useEffect: Redirecting to Authority Dashboard');
+  //       navigate('/authority');
+  //     } else {
+  //       console.log('🙏 useEffect: Redirecting to Pilgrim Portal');
+  //       navigate('/pilgrim');
+  //     }
+  //   }
+  // }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +99,25 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      {/* Navigation Header */}
+      <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-gradient">TRINETRA</h1>
+              <span className="ml-2 text-sm text-muted-foreground">Login Portal</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <a href="/" className="text-sm text-muted-foreground hover:text-primary">Home</a>
+              <a href="/pilgrim" className="text-sm text-muted-foreground hover:text-primary">Pilgrim Demo</a>
+              <a href="/authority" className="text-sm text-muted-foreground hover:text-primary">Authority Demo</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <div className="flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <Card className="shadow-large border-0">
           <CardHeader className="text-center space-y-2">
@@ -110,11 +128,52 @@ const LoginPage: React.FC = () => {
               {t('welcomeBack')}
             </CardTitle>
             <CardDescription className="text-base">
-              {language === 'en' ? 'Enter your Aadhaar card details to proceed' : 'आगे बढ़ने के लिए अपना आधार कार्ड विवरण दर्ज करें'}
+              {t('enterMobile')}
             </CardDescription>
           </CardHeader>
           
           <CardContent>
+            {/* Current User Status */}
+            {user && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-800 font-medium">
+                      ✅ {language === 'en' ? 'Currently logged in as:' : 'वर्तमान में लॉग इन:'}
+                    </p>
+                    <p className="text-green-700 text-sm">
+                      👤 {user.name} ({user.role === 'authority' ? (language === 'en' ? 'Authority' : 'प्राधिकरण') : (language === 'en' ? 'Pilgrim' : 'तीर्थयात्री')})
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={logout}>
+                    {language === 'en' ? 'Logout' : 'लॉग आउट'}
+                  </Button>
+                </div>
+                <div className="mt-3 flex space-x-2">
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => navigate(user.role === 'authority' ? '/authority' : '/pilgrim')}
+                    className="flex-1"
+                  >
+                    {language === 'en' ? 'Go to Dashboard' : 'डैशबोर्ड पर जाएं'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate('/')}
+                    className="flex-1"
+                  >
+                    {language === 'en' ? 'Home' : 'होम'}
+                  </Button>
+                </div>
+                <hr className="my-4" />
+                <p className="text-center text-sm text-muted-foreground">
+                  {language === 'en' ? 'Or login with a different account:' : 'या किसी अन्य खाते से लॉगिन करें:'}
+                </p>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Name Input */}
               <div className="space-y-2">
@@ -256,6 +315,7 @@ const LoginPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

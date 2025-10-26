@@ -30,19 +30,9 @@ const queryClient = new QueryClient({
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center">
     <div className="text-center">
-      <div className="relative mb-6">
-        <img 
-          src="/trinetra-logo.svg" 
-          alt="TRINETRA Logo" 
-          className="w-20 h-20 mx-auto mb-4 animate-pulse"
-        />
-        <div className="absolute inset-0 animate-spin">
-          <div className="w-24 h-24 border-4 border-primary/20 border-t-primary rounded-full mx-auto"></div>
-        </div>
-      </div>
-      <p className="text-lg font-semibold text-gradient">Loading TRINETRA...</p>
+      <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+      <p className="text-lg font-semibold text-muted-foreground">Loading TRINETRA...</p>
       <p className="text-sm text-muted-foreground">Smart Crowd Management System</p>
-      <p className="text-xs text-muted-foreground mt-2">Mahakumbh 2028</p>
     </div>
   </div>
 );
@@ -61,14 +51,9 @@ const App: React.FC = () => {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     
-                    {/* Demo Routes - Allow public access for testing */}
-                    <Route path="/pilgrim" element={<PilgrimPortal />} />
-                    <Route path="/authority" element={<AuthorityDashboard />} />
-                    <Route path="/test" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Test Route Works! 🎉</h1><p>This confirms routing is working properly.</p></div>} />
-                    
                     {/* Protected Routes */}
                     <Route 
-                      path="/authority-protected" 
+                      path="/authority" 
                       element={
                         <ProtectedRoute requiredRole="authority">
                           <AuthorityDashboard />
@@ -76,7 +61,7 @@ const App: React.FC = () => {
                       } 
                     />
                     <Route 
-                      path="/pilgrim-protected" 
+                      path="/pilgrim" 
                       element={
                         <ProtectedRoute requiredRole="pilgrim">
                           <PilgrimPortal />

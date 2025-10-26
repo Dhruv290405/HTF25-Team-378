@@ -1,3 +1,30 @@
+const YOLO_SERVER_URL = (import.meta.env.VITE_YOLO_SERVER_URL as string) || 'http://localhost:5000';
+
+export async function detectFrame(blob: Blob) {
+  const form = new FormData();
+  form.append('frame', blob, 'frame.jpg');
+
+  const res = await fetch(`${YOLO_SERVER_URL}/detect`, {
+    method: 'POST',
+    body: form,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`YOLO server error: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
+
+export async function pingServer() {
+  try {
+    const r = await fetch(`${YOLO_SERVER_URL}/ping`);
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
 // YOLO v8 Service for Real-time Crowd Counting Integration
 // Integrates with the ngrok tunnel from Google Colab YOLO implementation
 

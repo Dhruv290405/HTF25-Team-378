@@ -79,6 +79,60 @@
 - **npm**: v9 or higher
 - **Git**: Latest version
 
+### YOLO v8 Live Camera Integration
+
+This project includes a lightweight example to run YOLO v8 as a local HTTP service and a React component to stream your webcam, send frames to the YOLO server, and display detections.
+
+Files added:
+- `src/components/YoloLive.tsx` — React component to capture webcam frames and draw detections.
+- `src/services/yoloService.ts` — client service that posts frames to the YOLO server.
+- `scripts/yolo_server.py` — small Flask server using ultralytics YOLO to respond to `/detect` and `/ping`.
+
+Run YOLO server locally (recommended when testing on your machine):
+
+1. Create a Python virtual env and install packages:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install ultralytics flask pillow
+```
+
+2. Download a YOLOv8 model (e.g., `yolov8n.pt`) or use the ultralytics defaults.
+
+3. Run the server:
+
+```powershell
+python scripts/yolo_server.py --model yolov8n.pt --host 0.0.0.0 --port 5000
+```
+
+If you're using Google Colab, run the same script there and expose it via ngrok. Configure the public ngrok URL in your frontend by setting the Vite environment variable below.
+
+Configure the frontend to use the YOLO server:
+
+Create a `.env` file in the project root with:
+
+```
+VITE_YOLO_SERVER_URL=http://localhost:5000
+```
+
+Then restart the dev server. The `YoloLive` component will POST frames to `${VITE_YOLO_SERVER_URL}/detect` and expects JSON with the shape:
+
+```json
+{
+  "left_count": 25,
+  "right_count": 18,
+  "total_count": 43,
+  "more_people_side": "left",
+  "boxes": [{"x1":10,"y1":10,"x2":100,"y2":120,"conf":0.9,"label":"person"}]
+}
+```
+
+Security and performance notes:
+- This example is for demo purposes. Add authentication and rate limiting before exposing any model publicly.
+- For production, run YOLO on a GPU-enabled instance and use batching for throughput.
+
+
 ### Installation
 
 ```bash

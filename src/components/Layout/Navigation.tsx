@@ -2,13 +2,14 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTranslation } from '@/utils/translations';
-import { Globe, LogOut, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '@/components/LanguageSelector';
+import { LogOut, User } from 'lucide-react';
 
 const Navigation: React.FC = () => {
-  const { user, logout, language, toggleLanguage } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
-  const t = useTranslation(language);
+  const { t } = useTranslation();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -22,7 +23,7 @@ const Navigation: React.FC = () => {
               कुंभ
             </div>
             <span className="font-bold text-lg text-gradient">
-              {language === 'en' ? 'Mahakumbh 2028' : 'महाकुंभ 2028'}
+              TRINETRA 2028
             </span>
           </Link>
 
@@ -36,7 +37,7 @@ const Navigation: React.FC = () => {
                   : 'text-muted-foreground hover:text-primary'
               }`}
             >
-              {t('home')}
+              {t('nav.home')}
             </Link>
             
             {user?.role === 'pilgrim' && (
@@ -48,7 +49,7 @@ const Navigation: React.FC = () => {
                     : 'text-muted-foreground hover:text-primary'
                 }`}
               >
-                {t('pilgrimPortal')}
+                {t('nav.pilgrim')}
               </Link>
             )}
             
@@ -61,25 +62,15 @@ const Navigation: React.FC = () => {
                     : 'text-muted-foreground hover:text-secondary'
                 }`}
               >
-                {t('authorityDashboard')}
+                {t('nav.authority')}
               </Link>
             )}
           </div>
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
-            {/* Language Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleLanguage}
-              className="flex items-center space-x-1"
-            >
-              <Globe className="w-4 h-4" />
-              <span className="text-xs font-medium">
-                {language === 'en' ? 'हि' : 'EN'}
-              </span>
-            </Button>
+            {/* Language Selector */}
+            <LanguageSelector />
 
             {/* User actions */}
             {user ? (
@@ -95,13 +86,13 @@ const Navigation: React.FC = () => {
                   className="flex items-center space-x-1"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('logout')}</span>
+                  <span className="hidden sm:inline">{t('nav.logout')}</span>
                 </Button>
               </div>
             ) : (
               <Link to="/login">
                 <Button variant="hero" size="sm">
-                  {t('login')}
+                  {t('nav.login')}
                 </Button>
               </Link>
             )}
